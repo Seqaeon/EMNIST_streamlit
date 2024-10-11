@@ -52,10 +52,15 @@ def down_sample_item(x, down=200):
     return f(x, down)
 
 def down_sample(image, down=200):
-    down_image = np.zeros(image.shape)
-    down_image[image < down] = 0
-    down_image[image >= down] = 1
-    return down_image
+    if image.ndim == 1:
+        # Handle 1D array
+        return np.array([np.array(list(format(pixel, '08b')), dtype=np.uint8) for pixel in image])
+    # elif image.ndim == 2:
+    #     # Handle 2D array
+    #     return np.array([[np.array(list(format(pixel, '08b')), dtype=np.uint8) for pixel in row] for row in image])
+    else:
+        # Handle 3D or higher-dimensional arrays
+        return np.array([down_sample(sub_array) for sub_array in image])
 
 
 def get_font_data(filename):

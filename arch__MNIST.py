@@ -4,7 +4,7 @@ import ao_arch as ar
 description = "Basic MNIST"
 # 1 channel, 28x28=784 neurons, each corresponding to a
 # point in MNIST (downsampled to 28x28 bitmap)
-arch_i = [28 * 28]
+arch_i = [8 for i in range(28 * 28)]
 # 1 channel or dimension of output, 4 neurons, corresponding to 2^4=16 binary to code for 0-9 int, the MNIST labels
 arch_z = [4]
 # No control neurons used here
