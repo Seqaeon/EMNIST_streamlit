@@ -51,7 +51,7 @@ def down_sample_item(x, down=200):
     f = np.vectorize(lambda x, down: 1 if x >= down else 0)
     return f(x, down)
 
-def down_sample(image, down=200):
+def bitmap_to_binary(image):
     if image.ndim == 1:
         # Handle 1D array
         return np.array([np.array(list(format(pixel, '08b')), dtype=np.uint8) for pixel in image])
@@ -60,7 +60,7 @@ def down_sample(image, down=200):
     #     return np.array([[np.array(list(format(pixel, '08b')), dtype=np.uint8) for pixel in row] for row in image])
     else:
         # Handle 3D or higher-dimensional arrays
-        return np.array([down_sample(sub_array) for sub_array in image])
+        return np.array([bitmap_to_binary(sub_array) for sub_array in image])
 
 
 def get_font_data(filename):

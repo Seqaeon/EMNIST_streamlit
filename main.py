@@ -92,7 +92,7 @@ def run_trials(is_training, num_trials, user_STEPS):
     num_trials = len(selected_in)
 
     if is_training:
-        INPUT = data.down_sample(selected_in).reshape(num_trials, 784*8)
+        INPUT = data.bitmap_to_binary(selected_in).reshape(num_trials, 784*8)
         st.session_state.agent.next_state_batch(INPUT, selected_z, unsequenced=True)
         print("Training complete; neurons updated.")
         return
@@ -114,7 +114,7 @@ def run_trials(is_training, num_trials, user_STEPS):
             interrupt_modal_dialog()
             break
 
-        INPUT = data.down_sample(selected_in[t, :, :]).reshape(784*8)
+        INPUT = data.bitmap_to_binary(selected_in[t, :, :]).reshape(784*8)
         LABEL = selected_z[t]
         if is_training:
             user_STEPS = 1
@@ -138,7 +138,7 @@ def run_trials(is_training, num_trials, user_STEPS):
 
 
 def run_canvas():
-    input = data.down_sample(st.session_state.canvas_image).reshape(784*8)
+    input = data.bitmap_to_binary(st.session_state.canvas_image).reshape(784*8)
     label = []
     user_steps = 10
     if st.session_state.train_canvas:
