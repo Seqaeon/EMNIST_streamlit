@@ -154,18 +154,23 @@ def run_canvas():
 # Used to construct images of agent state
 def bin_to_pix(img):
     if img.ndim == 1:
-        return int(''.join(map(str, img)), 2)
+        return np.array(int(''.join(map(str, img)), 2),dtype=np.uint8)
     # elif img.ndim == 2:
-    #     return np.array([int(''.join(map(str, pixel)), 2) for pixel in img])
+    #     return np.array([int(''.join(map(str, pixel)), 2) for pixel in img], dtype=np.uint8)
     else:
-        return np.array([bin_to_pix(sub_array) for sub_array in img])
+        return np.array([bin_to_pix(sub_array) for sub_array in img],dtype=np.uint8)
 
 
 
 def arr_to_img(img_array, enlarge_factor=15):
-    # Convert the binary array to a numpy array
-    img_array = bin_to_pix(img_array)
-    img_array = np.array(img_array, dtype=np.uint8)
+    if img_array.ndim == 1:
+        img_array = np.array(img_array, dtype=np.uint8)
+        img_array = img_array * 255
+
+    else:
+        # Convert the binary array to a numpy array
+        img_array = bin_to_pix(img_array)
+        #img_array = img_array.astype(np.uint8)
 
 
     enlarged_array = np.repeat(img_array, enlarge_factor, axis=0)
@@ -475,6 +480,7 @@ with state_col:
             sel_state, st.session_state.agent.arch.Z__flat
         ]
         z_int = z_arr.dot(2 ** np.arange(z_arr.size)[::-1])
+
         z_img = arr_to_img(z_arr)
         st.write("Result in binary:")
         st.image(z_img)
