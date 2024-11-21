@@ -46,6 +46,8 @@ def random_sample(num_samples, samples, labels):
     index = np.random.choice(samples.shape[0], num_samples, replace=False)
     return samples[index], labels[index]
 
+def samples_in_order(num_samples, samples, labels):  # function to pick samples in order not random
+    return samples[:num_samples], labels[:num_samples]
 
 def down_sample_item(x, down=200):
     f = np.vectorize(lambda x, down: 1 if x >= down else 0)
