@@ -74,35 +74,60 @@ def run_agent(user_STEPS, INPUT, LABEL=[]):
     # return st.session_state.agent_zresponse
     return z
 
+# Initialize selected_z only if it doesn't exist
+
+if 'selected_z' not in st.session_state:
+    st.session_state.selected_z = []
+
 
 def run_trials(is_training, num_trials, user_STEPS):
+    #st.session_state.selected_z = []
+
 
     initialize_session_state()
+    
+    st.session_state.is_training = is_training
+    
+    if "EMNIST_ByClass" in st.session_state.training_sets and ("EMNIST_Letters" in st.session_state.training_sets or "EMNIST_Digits" in st.session_state.training_sets):
+        chosen_set = [i for i in st.session_state.training_sets if i not in ['EMNIST_Letters', 'EMNIST_Digits']]
+    else:
+        chosen_set = st.session_state.training_sets
 
-    trialset = data.MN_TRAIN if is_training else data.MN_TEST
-    trialset_z = data.MN_TRAIN_Z if is_training else data.MN_TEST_Z
+
+    (MN_TRAIN, MN_TRAIN_Z), (MN_TEST, MN_TEST_Z) = data.choose_data(dataset=chosen_set)
+
+
+
+    trialset = MN_TRAIN if is_training else MN_TEST
+    trialset_z = MN_TRAIN_Z if is_training else MN_TEST_Z
 
     # selected_in, selected_z = data.random_sample(num_trials, trialset, trialset_z)
     selected_in, selected_z = data.samples_in_order(num_trials, trialset, trialset_z)
 
     # Just training on fonts
     if is_training and (
-        num_trials == 0 or "MNIST" not in st.session_state.training_sets
+        num_trials == 0 or "None" not in st.session_state.training_fonts
     ):
         selected_in, selected_z = data.select_training_fonts(
-            st.session_state.training_sets
+            st.session_state.training_fonts
         )
-    elif is_training and (
-        "MNIST" in st.session_state.training_sets
-        and len(st.session_state.training_sets) > 1
-    ):
-        font_in, font_out = data.select_training_fonts(st.session_state.training_sets)
+
+        font_in, font_out = data.select_training_fonts(st.session_state.training_fonts)
         selected_in = np.append(selected_in, font_in, axis=0)
         selected_z = np.append(selected_z, font_out, axis=0)
+        
+#    elif is_training and (
+#        "MNIST" in st.session_state.training_sets
+#        and len(st.session_state.training_sets) > 1
+#    ):
+#        font_in, font_out = data.select_training_fonts(st.session_state.training_sets)
+#        selected_in = np.append(selected_in, font_in, axis=0)
+#        selected_z = np.append(selected_z, font_out, axis=0)
 
     correct_responses = 0
     num_trials = len(selected_in)
-
+    repeats = 2 if is_training else 11
+    st.session_state.selected_z.extend([num for num in selected_z for _ in range(repeats)])
     if is_training:
         INPUT = data.bitmap_to_binary(selected_in).reshape(num_trials, 784*8)
         st.session_state.agent.next_state_batch(INPUT, selected_z, unsequenced=True)
@@ -128,6 +153,7 @@ def run_trials(is_training, num_trials, user_STEPS):
 
         INPUT = data.bitmap_to_binary(selected_in[t, :, :]).reshape(784*8)
         LABEL = selected_z[t]
+        
         if is_training:
             user_STEPS = 1
             run_agent(user_STEPS, INPUT, LABEL)
@@ -154,7 +180,7 @@ def run_canvas():
     label = []
     user_steps = 10
     if st.session_state.train_canvas:
-        label = list(np.binary_repr(int(canvas_label), 4))
+        label = list(np.binary_repr(int(canvas_label), 6))
         user_steps = 1
     response = run_agent(user_steps, input, LABEL=label)
     print(response)
@@ -333,8 +359,15 @@ with agent_col:
     with st.expander("#### Batch Training & Testing", expanded=True):
         st.write("---")
         st.write("##### Training")
-        training_set_options = list(data.FONTS.keys())
-        training_set_options.insert(0, "MNIST")
+        training_font_options = list(data.FONTS.keys())
+        training_font_options.insert(0, "None")
+        st.session_state.training_fonts = st.multiselect(
+            "Select training fonts:",
+            options=training_font_options,
+            default=("None"),
+            help="When training on standard fonts (eg. Times New Roman, Arial, etc.), it trains on all of the digits of that font.",
+        )
+        training_set_options = data.dataset_list #['MNIST', 'EMNIST_ByClass', 'EMNIST_Letters', 'EMNIST_Digits']
         st.session_state.training_sets = st.multiselect(
             "Select training datasets:",
             options=training_set_options,
@@ -346,7 +379,7 @@ with agent_col:
         t_count, t_steps = st.columns(2)
         with t_count:
             train_count = st.number_input(
-            "Set the number of MNIST training pairs:",
+            "Set the number of training pairs:",
             1,
             train_max,
             value=2,
@@ -360,12 +393,16 @@ with agent_col:
                 value=10,
                 help="10 is a good default; put 1 if you choosing config 1",
             )
+
+
         st.button(
             "Train Agent",
             on_click=run_trials,
             args=(True, train_count, 1),
-            disabled=len(st.session_state.training_sets) == 0,
+            disabled=len(st.session_state.training_fonts) == 0,
         )
+
+
         st.write("---")
         st.write("##### Testing")
         t_count, t_steps = st.columns(2)
@@ -478,15 +515,21 @@ with state_col:
     )
 
     I_col, Q_col, Z_col = st.columns(3)
+#    if st.session_state.is_training:
+#        sel_state_i = sel_state #- 1
+#    else:
+#        sel_state_i = sel_state
 
     with I_col:
         st.write("##### Input")
+
         i_arr = st.session_state.agent.story[
             sel_state, st.session_state.agent.arch.I__flat
         ]
         i_arr = np.reshape(i_arr, [28, 28,8])
         i_img = arr_to_img(i_arr)
         st.image(i_img)
+        #st.write(sel_state)
 
     with Q_col:
         st.write("##### Inner State")
@@ -508,6 +551,10 @@ with state_col:
         st.write("Result in binary:")
         st.image(z_img)
         st.write("  " + str(z_arr))
+
+        if st.session_state.selected_z and sel_state <= len(st.session_state.selected_z):
+            st.write("Actual label: "+str(bin_to_pix(np.array([int(i) for i in st.session_state.selected_z[sel_state-1]])).item()))
+
         st.write("Result as an integer label: " + str(z_int))
 
 st.write("---")
