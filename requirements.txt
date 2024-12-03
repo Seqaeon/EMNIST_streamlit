@@ -15,4 +15,4 @@ openpyxl
 beautifulsoup4
 torch
 torchvision
-pickle
+
