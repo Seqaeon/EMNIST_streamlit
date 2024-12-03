@@ -8,7 +8,7 @@ from PIL import Image
 import data_prep as data
 
 
-(MN_TRAIN, MN_TRAIN_Z), (MN_TEST, MN_TEST_Z) = data.choose_data(dataset=chosen_set)
+(MN_TRAIN, MN_TRAIN_Z), (MN_TEST, MN_TEST_Z) = data.choose_data(dataset=['EMNIST_Letters'])
 
 st.write(MN_TRAIN_Z[1])
 st.write("Sucessful!!")
