@@ -78,7 +78,8 @@ def run_agent(user_STEPS, INPUT, LABEL=[]):
 
 if 'selected_z' not in st.session_state:
     st.session_state.selected_z = []
-
+if 'chosen_set' not in st.session_state:
+    st.session_state.chosen_set = []
 
 def run_trials(is_training, num_trials, user_STEPS):
     #st.session_state.selected_z = []
@@ -90,8 +91,11 @@ def run_trials(is_training, num_trials, user_STEPS):
     
     if "EMNIST_ByClass" in st.session_state.training_sets and ("EMNIST_Letters" in st.session_state.training_sets or "EMNIST_Digits" in st.session_state.training_sets):
         chosen_set = [i for i in st.session_state.training_sets if i not in ['EMNIST_Letters', 'EMNIST_Digits']]
+    elif "EMNIST_Letters" in st.session_state.training_sets and ("EMNIST_Digits" in st.session_state.training_sets or 'MNIST' in st.session_state.training_sets) and "EMNIST_ByClass" not in st.session_state.training_sets:
+        chosen_set = [i for i in st.session_state.training_sets if i not in ['EMNIST_Letters', 'MNIST','EMNIST_Digits']+['EMNIST_ByClass']]+['EMNIST_ByClass']
     else:
         chosen_set = st.session_state.training_sets
+    st.session_state.chosen_set = chosen_set
 
 
     (MN_TRAIN, MN_TRAIN_Z), (MN_TEST, MN_TEST_Z) = data.choose_data(dataset=chosen_set)
@@ -553,9 +557,13 @@ with state_col:
         st.write("  " + str(z_arr))
 
         if st.session_state.selected_z and sel_state <= len(st.session_state.selected_z):
-            st.write("Actual label: "+str(bin_to_pix(np.array([int(i) for i in st.session_state.selected_z[sel_state-1]])).item()))
+            if len(st.session_state.chosen_set) == 1 and st.session_state.chosen_set[0] == 'EMNIST_ByClass':
+                st.write("Actual label: "+ data.label_names[bin_to_pix(np.array([int(i) for i in st.session_state.selected_z[sel_state-1]])).item()])
+                st.write("Result as an label name: " + data.label_names[z_int])
+            else:
+                st.write("Actual label: "+str(bin_to_pix(np.array([int(i) for i in st.session_state.selected_z[sel_state-1]])).item()))
 
-        st.write("Result as an integer label: " + str(z_int))
+                st.write("Result as an integer label: " + str(z_int))
 
 st.write("---")
 footer_md = """

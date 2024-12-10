@@ -51,29 +51,33 @@ def process_data(dataset='MNIST'):
         (MN_TRAIN, MN_TRAIN_labels), (MN_TEST, MN_TEST_labels) = data
         MN_TRAIN_Z = process_labels(MN_TRAIN_labels)
         MN_TEST_Z = process_labels(MN_TEST_labels)
+        label_names = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']
     elif dataset == "EMNIST_ByClass":
         emnist_train_complete = datasets.EMNIST(root='./EMNIST', split='byclass', train=True, download=True, transform=transform)
         emnist_test_complete = datasets.EMNIST(root='./EMNIST', split='byclass', train=False, download=True, transform=transform)
         (MN_TRAIN, MN_TRAIN_Z), (MN_TEST, MN_TEST_Z) = (emnist_train_complete.data.numpy(),process_labels(emnist_train_complete.targets.numpy())) , (emnist_test_complete.data.numpy(), process_labels(emnist_test_complete.targets.numpy()))
+        label_names = emnist_train_complete.classes
     elif dataset == "EMNIST_Letters":
         emnist_train_complete = datasets.EMNIST(root='./EMNIST', split='letters', train=True, download=True, transform=transform)
         emnist_test_complete = datasets.EMNIST(root='./EMNIST', split='letters', train=False, download=True, transform=transform)
         (MN_TRAIN, MN_TRAIN_Z), (MN_TEST, MN_TEST_Z) = (emnist_train_complete.data.numpy(),process_labels(emnist_train_complete.targets.numpy())) , (emnist_test_complete.data.numpy(), process_labels(emnist_test_complete.targets.numpy()))
+        label_names = emnist_train_complete.classes
     elif dataset == "EMNIST_Digits":
         emnist_train_complete = datasets.EMNIST(root='./EMNIST', split='digits', train=True, download=True, transform=transform)
         emnist_test_complete = datasets.EMNIST(root='./EMNIST', split='digits', train=False, download=True, transform=transform)
         (MN_TRAIN, MN_TRAIN_Z), (MN_TEST, MN_TEST_Z) = (emnist_train_complete.data.numpy(),process_labels(emnist_train_complete.targets.numpy())) , (emnist_test_complete.data.numpy(), process_labels(emnist_test_complete.targets.numpy()))
+        label_names = emnist_train_complete.classes
     else:
         raise ValueError("Invalid dataset option selected. Please choose from 'MNIST', 'EMNIST_ByClass', 'EMNIST_Letters', or 'EMNIST_Digits'.")
 
-    return (MN_TRAIN, MN_TRAIN_Z), (MN_TEST, MN_TEST_Z)
+    return (MN_TRAIN, MN_TRAIN_Z), (MN_TEST, MN_TEST_Z), label_names
 
 def choose_data(dataset=['MNIST']):
     MN_TRAIN_list, MN_TRAIN_Z_list = [], []
     MN_TEST_list, MN_TEST_Z_list = [], []
 
     for data in dataset:
-        (MN_TRAIN, MN_TRAIN_Z), (MN_TEST, MN_TEST_Z) = process_data(data)
+        (MN_TRAIN, MN_TRAIN_Z), (MN_TEST, MN_TEST_Z), _ = process_data(data)
         MN_TRAIN_list.append(MN_TRAIN)
         MN_TRAIN_Z_list.append(MN_TRAIN_Z)
         #print(MN_TRAIN_Z.shape)
@@ -162,4 +166,5 @@ def select_training_fonts(fonts):
 
 
 (MN_TRAIN, MN_TRAIN_Z), (MN_TEST, MN_TEST_Z) = choose_data(dataset=['MNIST'])
+a,b, label_names = process_data(dataset='EMNIST_ByClass')
 FONTS = get_all_fonts()
