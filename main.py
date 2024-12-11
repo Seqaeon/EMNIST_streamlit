@@ -50,15 +50,6 @@ def run_agent(user_STEPS, INPUT, LABEL=[]):
         print("labelled")
         # core method to run Agents
         st.session_state.agent.next_state(INPUT, LABEL, DD=False, unsequenced=True)
-    
-    # Config 2 -->       
-    # else:
-    #     print("labelled")
-    #     for x in np.arange(user_STEPS):
-    #         st.session_state.agent.reset_state()
-    #         # core method to run Agents
-    #         st.session_state.agent.next_state(INPUT, LABEL, DD=False, unsequenced=True)
-    
 
     # saving results
     s = st.session_state.agent.state
@@ -380,25 +371,15 @@ with agent_col:
         )
 
         
-        t_count, t_steps = st.columns(2)
-        with t_count:
-            train_count = st.number_input(
+        
+        train_count = st.number_input(
             "Set the number of training pairs:",
             1,
             train_max,
             value=2,
-            help="Sequentially selected from MNIST's 60k training set.",
+            help="Randomly  selected from MNIST's 60k training set.",
         )
-        with t_steps:
-            user_STEPS = st.number_input(
-                "Number of steps per train image:",
-                1,
-                20,
-                value=10,
-                help="10 is a good default; put 1 if you choosing config 1",
-            )
-
-
+        
         st.button(
             "Train Agent",
             on_click=run_trials,
@@ -416,7 +397,7 @@ with agent_col:
                 1,
                 test_max,
                 value=1,
-                help="Sequentially selected from MNIST's 10k test set.",
+                help="Randomly selected from MNIST's 10k test set.",
             )
         with t_steps:
             user_STEPS = st.number_input(
