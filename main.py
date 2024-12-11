@@ -46,18 +46,18 @@ def run_agent(user_STEPS, INPUT, LABEL=[]):
             st.session_state.agent.next_state(INPUT, DD=False, unsequenced=True)
 
     # Config 1 -->         
-    # else:
-    #     print("labelled")
-    #     # core method to run Agents
-    #     st.session_state.agent.next_state(INPUT, LABEL, DD=False, unsequenced=True)
-    
-    # Config 2 -->       
     else:
         print("labelled")
-        for x in np.arange(user_STEPS):
-            st.session_state.agent.reset_state()
-            # core method to run Agents
-            st.session_state.agent.next_state(INPUT, LABEL, DD=False, unsequenced=True)
+        # core method to run Agents
+        st.session_state.agent.next_state(INPUT, LABEL, DD=False, unsequenced=True)
+    
+    # Config 2 -->       
+    # else:
+    #     print("labelled")
+    #     for x in np.arange(user_STEPS):
+    #         st.session_state.agent.reset_state()
+    #         # core method to run Agents
+    #         st.session_state.agent.next_state(INPUT, LABEL, DD=False, unsequenced=True)
     
 
     # saving results
