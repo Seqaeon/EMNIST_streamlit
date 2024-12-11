@@ -105,8 +105,8 @@ def run_trials(is_training, num_trials, user_STEPS):
     trialset = MN_TRAIN if is_training else MN_TEST
     trialset_z = MN_TRAIN_Z if is_training else MN_TEST_Z
 
-    # selected_in, selected_z = data.random_sample(num_trials, trialset, trialset_z)
-    selected_in, selected_z = data.samples_in_order(num_trials, trialset, trialset_z)
+    # selected_in, selected_z = data.random_sample_same(num_trials, trialset, trialset_z, seed=42)
+    selected_in, selected_z = data.random_sample(num_trials, trialset, trialset_z)
 
     # Just training on fonts
     if is_training and (
