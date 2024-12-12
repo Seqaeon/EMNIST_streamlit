@@ -46,19 +46,10 @@ def run_agent(user_STEPS, INPUT, LABEL=[]):
             st.session_state.agent.next_state(INPUT, DD=False, unsequenced=True)
 
     # Config 1 -->         
-    # else:
-    #     print("labelled")
-    #     # core method to run Agents
-    #     st.session_state.agent.next_state(INPUT, LABEL, DD=False, unsequenced=True)
-    
-    # Config 2 -->       
     else:
         print("labelled")
-        for x in np.arange(user_STEPS):
-            st.session_state.agent.reset_state()
-            # core method to run Agents
-            st.session_state.agent.next_state(INPUT, LABEL, DD=False, unsequenced=True)
-    
+        # core method to run Agents
+        st.session_state.agent.next_state(INPUT, LABEL, DD=False, unsequenced=True)
 
     # saving results
     s = st.session_state.agent.state
@@ -105,8 +96,8 @@ def run_trials(is_training, num_trials, user_STEPS):
     trialset = MN_TRAIN if is_training else MN_TEST
     trialset_z = MN_TRAIN_Z if is_training else MN_TEST_Z
 
-    # selected_in, selected_z = data.random_sample(num_trials, trialset, trialset_z)
-    selected_in, selected_z = data.samples_in_order(num_trials, trialset, trialset_z)
+    # selected_in, selected_z = data.random_sample_same(num_trials, trialset, trialset_z, seed=42)
+    selected_in, selected_z = data.random_sample(num_trials, trialset, trialset_z)
 
     # Just training on fonts
     if is_training and (
@@ -380,25 +371,15 @@ with agent_col:
         )
 
         
-        t_count, t_steps = st.columns(2)
-        with t_count:
-            train_count = st.number_input(
+        
+        train_count = st.number_input(
             "Set the number of training pairs:",
             1,
             train_max,
             value=2,
-            help="Sequentially selected from MNIST's 60k training set.",
+            help="Randomly  selected from MNIST's 60k training set.",
         )
-        with t_steps:
-            user_STEPS = st.number_input(
-                "Number of steps per train image:",
-                1,
-                20,
-                value=10,
-                help="10 is a good default; put 1 if you choosing config 1",
-            )
-
-
+        
         st.button(
             "Train Agent",
             on_click=run_trials,
@@ -416,7 +397,7 @@ with agent_col:
                 1,
                 test_max,
                 value=1,
-                help="Sequentially selected from MNIST's 10k test set.",
+                help="Randomly selected from MNIST's 10k test set.",
             )
         with t_steps:
             user_STEPS = st.number_input(
