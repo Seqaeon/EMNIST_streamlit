@@ -80,12 +80,13 @@ def run_trials(is_training, num_trials, user_STEPS):
     
     st.session_state.is_training = is_training
     
-    if "EMNIST_ByClass" in st.session_state.training_sets and ("EMNIST_Letters" in st.session_state.training_sets or "EMNIST_Digits" in st.session_state.training_sets):
-        chosen_set = [i for i in st.session_state.training_sets if i not in ['EMNIST_Letters', 'EMNIST_Digits']]
-    elif "EMNIST_Letters" in st.session_state.training_sets and ("EMNIST_Digits" in st.session_state.training_sets or 'MNIST' in st.session_state.training_sets) and "EMNIST_ByClass" not in st.session_state.training_sets:
-        chosen_set = [i for i in st.session_state.training_sets if i not in ['EMNIST_Letters', 'MNIST','EMNIST_Digits']+['EMNIST_ByClass']]+['EMNIST_ByClass']
-    else:
-        chosen_set = st.session_state.training_sets
+#    if "EMNIST_ByClass" in st.session_state.training_sets and ("EMNIST_Letters" in st.session_state.training_sets or "EMNIST_Digits" in st.session_state.training_sets):
+#        chosen_set = [i for i in st.session_state.training_sets if i not in ['EMNIST_Letters', 'EMNIST_Digits']]
+#    elif "EMNIST_Letters" in st.session_state.training_sets and ("EMNIST_Digits" in st.session_state.training_sets or 'MNIST' in st.session_state.training_sets) and "EMNIST_ByClass" not in st.session_state.training_sets:
+#        chosen_set = [i for i in st.session_state.training_sets if i not in ['EMNIST_Letters', 'MNIST','EMNIST_Digits']+['EMNIST_ByClass']]+['EMNIST_ByClass']
+#    else:
+#        chosen_set = [st.session_state.training_sets]
+    chosen_set = [st.session_state.training_sets]
     st.session_state.chosen_set = chosen_set
 
 
@@ -121,11 +122,13 @@ def run_trials(is_training, num_trials, user_STEPS):
 
     correct_responses = 0
     num_trials = len(selected_in)
-    repeats = 2 if is_training else 11
-    st.session_state.selected_z.extend([num for num in selected_z for _ in range(repeats)])
+#    repeats = 2 if is_training else 11
+#    st.session_state.selected_z.extend([num for num in selected_z for _ in range(repeats)])
     if is_training:
         INPUT = data.bitmap_to_binary(selected_in).reshape(num_trials, 784*8)
         st.session_state.agent.next_state_batch(INPUT, selected_z, unsequenced=True)
+        repeats = 2
+        st.session_state.selected_z.extend([num for num in selected_z for _ in range(repeats)])
         print("Training complete; neurons updated.")
         return
 
@@ -153,12 +156,16 @@ def run_trials(is_training, num_trials, user_STEPS):
             user_STEPS = 1
             run_agent(user_STEPS, INPUT, LABEL)
             print("Trained on " + str(t))
+#            repeats = 2
+#            st.session_state.selected_z.extend([LABEL]*repeats)
         else:
             response_agent = run_agent(user_STEPS, INPUT, LABEL=[])
             if np.array_equal(response_agent, LABEL):
                 correct_responses += 1
             print("Tested on " + str(t))
             print("TOTAL CORRECT-----------------" + str(correct_responses))
+            repeats = 11
+            st.session_state.selected_z.extend([LABEL]*repeats)
 
         st.session_state.num_trials_actual += 1
 
@@ -363,10 +370,10 @@ with agent_col:
             help="When training on standard fonts (eg. Times New Roman, Arial, etc.), it trains on all of the digits of that font.",
         )
         training_set_options = data.dataset_list #['MNIST', 'EMNIST_ByClass', 'EMNIST_Letters', 'EMNIST_Digits']
-        st.session_state.training_sets = st.multiselect(
+        st.session_state.training_sets = st.selectbox(
             "Select training datasets:",
             options=training_set_options,
-            default=("MNIST"),
+            index=training_set_options.index("MNIST"),
             help="When training on standard fonts (eg. Times New Roman, Arial, etc.), it trains on all of the digits of that font.",
         )
 
@@ -536,15 +543,33 @@ with state_col:
         st.write("Result in binary:")
         st.image(z_img)
         st.write("  " + str(z_arr))
+        #st.write("Labels " ,len(st.session_state.selected_z))
+        
 
         if st.session_state.selected_z and sel_state <= len(st.session_state.selected_z):
-            if len(st.session_state.chosen_set) == 1 and st.session_state.chosen_set[0] == 'EMNIST_ByClass':
-                st.write("Actual label: "+ data.label_names[bin_to_pix(np.array([int(i) for i in st.session_state.selected_z[sel_state-1]])).item()])
-                st.write("Result as an label name: " + data.label_names[z_int])
+            if st.session_state.chosen_set[0] == 'EMNIST_ByClass':
+                if not st.session_state.is_training:
+                    st.write("Actual label: "+ data.label_names[bin_to_pix(np.array([int(i) for i in st.session_state.selected_z[sel_state-1]])).item()])
+                    st.write("Result as an label name: " + data.label_names[z_int])
+                else:
+                    st.write("Label name: " + data.label_names[z_int])
+            elif st.session_state.chosen_set[0] == 'EMNIST_Letters':
+                _,_,label_names = data.process_data(dataset='EMNIST_Letters')
+                if not st.session_state.is_training:
+                    st.write("Actual label: "+ label_names[bin_to_pix(np.array([int(i) for i in st.session_state.selected_z[sel_state-1]])).item()])
+                    
+                    st.write("Result as an label name: " + label_names[z_int])
+                else:
+                    st.write("Label name: " + label_names[z_int])
+                
             else:
-                st.write("Actual label: "+str(bin_to_pix(np.array([int(i) for i in st.session_state.selected_z[sel_state-1]])).item()))
+                if not st.session_state.is_training:
+                    st.write("Actual label: "+str(bin_to_pix(np.array([int(i) for i in st.session_state.selected_z[sel_state-1]])).item()))
 
-                st.write("Result as an integer label: " + str(z_int))
+                    st.write("Result as an integer label: " + str(z_int))
+                else:
+                    st.write("Integer label: " + str(z_int))
+
 
 st.write("---")
 footer_md = """
