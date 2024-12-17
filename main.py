@@ -164,7 +164,7 @@ def run_trials(is_training, num_trials, user_STEPS):
                 correct_responses += 1
             print("Tested on " + str(t))
             print("TOTAL CORRECT-----------------" + str(correct_responses))
-            repeats = 11
+            repeats = user_STEPS + 1
             st.session_state.selected_z.extend([LABEL]*repeats)
 
         st.session_state.num_trials_actual += 1
@@ -550,25 +550,25 @@ with state_col:
             if st.session_state.chosen_set[0] == 'EMNIST_ByClass':
                 if not st.session_state.is_training:
                     st.write("Actual label: "+ data.label_names[bin_to_pix(np.array([int(i) for i in st.session_state.selected_z[sel_state-1]])).item()])
-                    st.write("Result as an label name: " + data.label_names[z_int])
+                    st.write("Result as an label name: " + data.label_names[z_int] if z_int <= 61 else '')
                 else:
-                    st.write("Label name: " + data.label_names[z_int])
+                    st.write("Label name: " + data.label_names[z_int] if z_int <= 61 else '')
             elif st.session_state.chosen_set[0] == 'EMNIST_Letters':
                 _,_,label_names = data.process_data(dataset='EMNIST_Letters')
                 if not st.session_state.is_training:
                     st.write("Actual label: "+ label_names[bin_to_pix(np.array([int(i) for i in st.session_state.selected_z[sel_state-1]])).item()])
                     
-                    st.write("Result as an label name: " + label_names[z_int])
+                    st.write("Result as an label name: " + label_names[z_int] if z_int <= 26 else '')
                 else:
-                    st.write("Label name: " + label_names[z_int])
+                    st.write("Label name: " + label_names[z_int] if z_int <= 26 else '')
                 
             else:
                 if not st.session_state.is_training:
                     st.write("Actual label: "+str(bin_to_pix(np.array([int(i) for i in st.session_state.selected_z[sel_state-1]])).item()))
 
-                    st.write("Result as an integer label: " + str(z_int))
+                    st.write("Result as an integer label: " + str(z_int) if z_int <= 9 else '')
                 else:
-                    st.write("Integer label: " + str(z_int))
+                    st.write("Integer label: " + str(z_int) if z_int <= 9 else '')
 
 
 st.write("---")
